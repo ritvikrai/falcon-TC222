@@ -64,6 +64,7 @@
 #include "Ifx_Types.h"
 #include "IfxCpu.h"
 #include "IfxScuWdt.h"
+#include "Ifx_Console.h"
 
 IfxCpu_syncEvent g_cpuSyncEvent = 0;
 

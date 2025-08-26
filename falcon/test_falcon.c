@@ -5004,7 +5004,7 @@ test_speed(void)
 #endif
 
 int
-main(void)
+main_nobuild_2(void)
 {
 	unsigned old;
 
