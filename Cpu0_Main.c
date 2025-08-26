@@ -54,7 +54,7 @@
  *
  * @author   Thomas Pornin <thomas.pornin@nccgroup.com>
  */
-#include <stdio.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -89,7 +89,7 @@ xmalloc(size_t len)
 	}
 	buf = malloc(len);
 	if (buf == NULL) {
-		fprintf(stderr, "memory allocation error\n");
+		Ifx_Console_print("memory allocation error\n");
 		exit(EXIT_FAILURE);
 	}
 	return buf;
@@ -118,7 +118,7 @@ hextobin(uint8_t *buf, size_t max_len, const char *src)
 		c = *src ++;
 		if (c == 0) {
 			if (z) {
-				fprintf(stderr, "Lone hex nibble\n");
+				Ifx_Console_print("Lone hex nibble\n");
 				exit(EXIT_FAILURE);
 			}
 			return u;
@@ -132,13 +132,13 @@ hextobin(uint8_t *buf, size_t max_len, const char *src)
 		} else if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
 			continue;
 		} else {
-			fprintf(stderr, "Not an hex digit: U+%04X\n",
+			Ifx_Console_print("Not an hex digit: U+%04X\n",
 				(unsigned)c);
 			exit(EXIT_FAILURE);
 		}
 		if (z) {
 			if (u >= max_len) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"Hex string too long for buffer\n");
 				exit(EXIT_FAILURE);
 			}
@@ -158,17 +158,17 @@ check_eq(const void *a, const void *b, size_t len, const char *banner)
 	if (memcmp(a, b, len) == 0) {
 		return;
 	}
-	fprintf(stderr, "%s: wrong value:\n", banner);
-	fprintf(stderr, "a: ");
+	Ifx_Console_print("%s: wrong value:\n", banner);
+	Ifx_Console_print("a: ");
 	for (u = 0; u < len; u ++) {
-		fprintf(stderr, "%02x", ((const unsigned char *)a)[u]);
+		Ifx_Console_print("%02x", ((const unsigned char *)a)[u]);
 	}
-	fprintf(stderr, "\n");
-	fprintf(stderr, "b: ");
+	Ifx_Console_print("\n");
+	Ifx_Console_print("b: ");
 	for (u = 0; u < len; u ++) {
-		fprintf(stderr, "%02x", ((const unsigned char *)b)[u]);
+		Ifx_Console_print("%02x", ((const unsigned char *)b)[u]);
 	}
-	fprintf(stderr, "\n");
+	Ifx_Console_print("\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -190,7 +190,7 @@ test_SHAKE256_KAT(const char *hexsrc, const char *hexout,
 	olen = hextobin(ref, tlen - ilen, hexout);
 	out = ref + olen;
 	if (tlen < ilen + 2 * olen) {
-		fprintf(stderr, "Temporary buffer too short\n");
+		Ifx_Console_print("Temporary buffer too short\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -219,16 +219,16 @@ test_SHAKE256(void)
 	uint8_t *tmp;
 	size_t tlen;
 
-	printf("Test SHAKE256: ");
-	fflush(stdout);
+	Ifx_Console_print("Test SHAKE256: ");
+	
 	tlen = 1000;
 	tmp = xmalloc(tlen);
 	test_SHAKE256_KAT("", "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be", tmp, tlen);
 	test_SHAKE256_KAT("dc5a100fa16df1583c79722a0d72833d3bf22c109b8889dbd35213c6bfce205813edae3242695cfd9f59b9a1c203c1b72ef1a5423147cb990b5316a85266675894e2644c3f9578cebe451a09e58c53788fe77a9e850943f8a275f830354b0593a762bac55e984db3e0661eca3cb83f67a6fb348e6177f7dee2df40c4322602f094953905681be3954fe44c4c902c8f6bba565a788b38f13411ba76ce0f9f6756a2a2687424c5435a51e62df7a8934b6e141f74c6ccf539e3782d22b5955d3baf1ab2cf7b5c3f74ec2f9447344e937957fd7f0bdfec56d5d25f61cde18c0986e244ecf780d6307e313117256948d4230ebb9ea62bb302cfe80d7dfebabc4a51d7687967ed5b416a139e974c005fff507a96", "2bac5716803a9cda8f9e84365ab0a681327b5ba34fdedfb1c12e6e807f45284b", tmp, tlen);
 	test_SHAKE256_KAT("8d8001e2c096f1b88e7c9224a086efd4797fbf74a8033a2d422a2b6b8f6747e4", "2e975f6a8a14f0704d51b13667d8195c219f71e6345696c49fa4b9d08e9225d3d39393425152c97e71dd24601c11abcfa0f12f53c680bd3ae757b8134a9c10d429615869217fdd5885c4db174985703a6d6de94a667eac3023443a8337ae1bc601b76d7d38ec3c34463105f0d3949d78e562a039e4469548b609395de5a4fd43c46ca9fd6ee29ada5efc07d84d553249450dab4a49c483ded250c9338f85cd937ae66bb436f3b4026e859fda1ca571432f3bfc09e7c03ca4d183b741111ca0483d0edabc03feb23b17ee48e844ba2408d9dcfd0139d2e8c7310125aee801c61ab7900d1efc47c078281766f361c5e6111346235e1dc38325666c", tmp, tlen);
 	xfree(tmp);
-	printf("done.\n");
-	fflush(stdout);
+	Ifx_Console_print("done.\n");
+	
 }
 
 static const int8_t ntru_f_16[] = {
@@ -2037,17 +2037,17 @@ test_codec_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 		}
 		len1 = Zf(modq_encode)(NULL, 0, m1, logn);
 		if (len1 != (((n * 14) + 7) >> 3)) {
-			fprintf(stderr, "ERR modq encode(0): %zu\n", len1);
+			Ifx_Console_print("ERR modq encode(0): %zu\n", len1);
 			exit(EXIT_FAILURE);
 		}
 		len1 = Zf(modq_encode)(ee, maxlen, m1, logn);
 		if (len1 != (((n * 14) + 7) >> 3)) {
-			fprintf(stderr, "ERR modq encode: %zu\n", len1);
+			Ifx_Console_print("ERR modq encode: %zu\n", len1);
 			exit(EXIT_FAILURE);
 		}
 		len2 = Zf(modq_decode)(m2, logn, ee, len1);
 		if (len2 != len1) {
-			fprintf(stderr, "ERR modq decode: %zu\n", len2);
+			Ifx_Console_print("ERR modq decode: %zu\n", len2);
 			exit(EXIT_FAILURE);
 		}
 		check_eq(m1, m2, n * sizeof *m2, "modq encode/decode");
@@ -2074,19 +2074,19 @@ test_codec_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 
 			len1 = Zf(trim_i16_encode)(NULL, 0, s1, logn, bits);
 			if (len1 != (((n * bits) + 7) >> 3)) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"ERR trim_i16 encode(0): %zu\n", len1);
 				exit(EXIT_FAILURE);
 			}
 			len1 = Zf(trim_i16_encode)(ee, maxlen, s1, logn, bits);
 			if (len1 != (((n * bits) + 7) >> 3)) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"ERR trim_i16 encode: %zu\n", len1);
 				exit(EXIT_FAILURE);
 			}
 			len2 = Zf(trim_i16_decode)(s2, logn, bits, ee, len1);
 			if (len2 != len1) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"ERR trim_i16 decode: %zu\n", len2);
 				exit(EXIT_FAILURE);
 			}
@@ -2096,13 +2096,13 @@ test_codec_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 			memset(s2, 0, n * sizeof *s2);
 			len1 = Zf(comp_encode)(ee, maxlen, s1, logn);
 			if (len1 == 0) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"ERR comp encode: %zu\n", len1);
 				exit(EXIT_FAILURE);
 			}
 			len2 = Zf(comp_decode)(s2, logn, ee, len1);
 			if (len2 != len1) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"ERR comp decode: %zu\n", len2);
 				exit(EXIT_FAILURE);
 			}
@@ -2131,19 +2131,19 @@ test_codec_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 
 			len1 = Zf(trim_i8_encode)(NULL, 0, b1, logn, bits);
 			if (len1 != (((n * bits) + 7) >> 3)) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"ERR trim_i8 encode(0): %zu\n", len1);
 				exit(EXIT_FAILURE);
 			}
 			len1 = Zf(trim_i8_encode)(ee, maxlen, b1, logn, bits);
 			if (len1 != (((n * bits) + 7) >> 3)) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"ERR trim_i8 encode: %zu\n", len1);
 				exit(EXIT_FAILURE);
 			}
 			len2 = Zf(trim_i8_decode)(b2, logn, bits, ee, len1);
 			if (len2 != len1) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"ERR trim_i8 decode: %zu\n", len2);
 				exit(EXIT_FAILURE);
 			}
@@ -2160,20 +2160,20 @@ test_codec(void)
 	uint8_t *tmp;
 	size_t tlen;
 
-	printf("Test encode/decode: ");
-	fflush(stdout);
+	Ifx_Console_print("Test encode/decode: ");
+	
 	tlen = 8192;
 	tmp = xmalloc(tlen);
 
 	for (logn = 1; logn <= 10; logn ++) {
 		test_codec_inner(logn, tmp, tlen);
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
 
 	xfree(tmp);
-	printf(" done.\n");
-	fflush(stdout);
+	Ifx_Console_print(" done.\n");
+	
 }
 
 static void
@@ -2192,11 +2192,11 @@ test_vrfy_inner(unsigned logn, const int8_t *f, const int8_t *g,
 	 */
 	h2 = (uint16_t *)tmp;
 	if (tlen < 4 * n) {
-		fprintf(stderr, "Insufficient buffer size\n");
+		Ifx_Console_print("Insufficient buffer size\n");
 		exit(EXIT_FAILURE);
 	}
 	if (!Zf(compute_public)(h2, f, g, logn, (uint8_t *)(h2 + n))) {
-		fprintf(stderr, "compute_public failed\n");
+		Ifx_Console_print("compute_public failed\n");
 		exit(EXIT_FAILURE);
 	}
 	check_eq(h, h2, n, "compute_public");
@@ -2206,11 +2206,11 @@ test_vrfy_inner(unsigned logn, const int8_t *f, const int8_t *g,
 	 */
 	G2 = (int8_t *)tmp;
 	if (tlen < 5 * n) {
-		fprintf(stderr, "Insufficient buffer size\n");
+		Ifx_Console_print("Insufficient buffer size\n");
 		exit(EXIT_FAILURE);
 	}
 	if (!Zf(complete_private)(G2, f, g, F, logn, (uint8_t *)(G2 + n))) {
-		fprintf(stderr, "complete_private failed\n");
+		Ifx_Console_print("complete_private failed\n");
 		exit(EXIT_FAILURE);
 	}
 	check_eq(G, G2, n, "complete_private");
@@ -2220,22 +2220,22 @@ test_vrfy_inner(unsigned logn, const int8_t *f, const int8_t *g,
 	 */
 	len1 = hextobin(tmp, tlen, hexpkey);
 	if (len1 != 1 + (((n * 14) + 7) >> 3)) {
-		fprintf(stderr, "unexpected public key length: %zu\n", len1);
+		Ifx_Console_print("unexpected public key length: %zu\n", len1);
 		exit(EXIT_FAILURE);
 	}
 	if (tmp[0] != logn) {
-		fprintf(stderr, "unexpected first pkey byte: %u\n", tmp[0]);
+		Ifx_Console_print("unexpected first pkey byte: %u\n", tmp[0]);
 		exit(EXIT_FAILURE);
 	}
 	len1 --;
 	if (tlen < 2 * len1) {
-		fprintf(stderr, "Insufficient buffer size\n");
+		Ifx_Console_print("Insufficient buffer size\n");
 		exit(EXIT_FAILURE);
 	}
 	memmove(tmp, tmp + 1, len1);
 	len2 = Zf(modq_encode)(tmp + len1, tlen - len1, h, logn);
 	if (len2 != len1) {
-		fprintf(stderr, "wrong encoded public key length: %zu\n", len2);
+		Ifx_Console_print("wrong encoded public key length: %zu\n", len2);
 		exit(EXIT_FAILURE);
 	}
 	check_eq(tmp, tmp + len1, len1, "pubkey encode\n");
@@ -2244,7 +2244,7 @@ test_vrfy_inner(unsigned logn, const int8_t *f, const int8_t *g,
 	 * Verify sample signatures.
 	 */
 	if (tlen < 8 * n) {
-		fprintf(stderr, "Insufficient buffer size\n");
+		Ifx_Console_print("Insufficient buffer size\n");
 		exit(EXIT_FAILURE);
 	}
 	for (u = 0; kat[u] != NULL; u += 3) {
@@ -2271,19 +2271,19 @@ test_vrfy_inner(unsigned logn, const int8_t *f, const int8_t *g,
 		sig = tmp;
 		len1 = hextobin(sig, tlen, kat[u + 2]);
 		if (len1 == 0 || sig[0] != logn) {
-			fprintf(stderr, "Invalid sig KAT\n");
+			Ifx_Console_print("Invalid sig KAT\n");
 			exit(EXIT_FAILURE);
 		}
 		len1 --;
 		memmove(sig, sig + 1, len1);
 		s2 = (int16_t *)(sig + len1);
 		if ((tlen - len1) < 2 * n) {
-			fprintf(stderr, "Insufficient buffer size\n");
+			Ifx_Console_print("Insufficient buffer size\n");
 			exit(EXIT_FAILURE);
 		}
 		len2 = Zf(trim_i16_decode)(s2, logn, 16, sig, len1);
 		if (len2 != len1) {
-			fprintf(stderr, "Invalid sig KAT\n");
+			Ifx_Console_print("Invalid sig KAT\n");
 			exit(EXIT_FAILURE);
 		}
 		memmove(tmp, s2, n * sizeof *s2);
@@ -2306,16 +2306,16 @@ test_vrfy_inner(unsigned logn, const int8_t *f, const int8_t *g,
 		 * Verify the signature.
 		 */
 		if (!Zf(verify_raw)(c0, s2, h2, logn, (uint8_t *)(c0 + n))) {
-			fprintf(stderr, "KAT signature failed\n");
+			Ifx_Console_print("KAT signature failed\n");
 			exit(EXIT_FAILURE);
 		}
 
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
 
-	printf(" ");
-	fflush(stdout);
+	Ifx_Console_print(" ");
+	
 }
 
 static void
@@ -2324,8 +2324,8 @@ test_vrfy(void)
 	uint8_t *tmp;
 	size_t tlen;
 
-	printf("Test verify: ");
-	fflush(stdout);
+	Ifx_Console_print("Test verify: ");
+	
 	tlen = 8192;
 	tmp = xmalloc(tlen);
 
@@ -2337,8 +2337,8 @@ test_vrfy(void)
 		ntru_h_1024, ntru_pkey_1024, KAT_SIG_1024, tmp, tlen);
 
 	xfree(tmp);
-	printf("done.\n");
-	fflush(stdout);
+	Ifx_Console_print("done.\n");
+	
 }
 
 static const uint64_t KAT_RNG_1[] = {
@@ -2500,8 +2500,8 @@ test_RNG(void)
 	prng p;
 	size_t u;
 
-	printf("Test RNG: ");
-	fflush(stdout);
+	Ifx_Console_print("Test RNG: ");
+	
 
 	inner_shake256_init(&sc);
 	inner_shake256_inject(&sc, (const uint8_t *)"rng", 3);
@@ -2509,19 +2509,19 @@ test_RNG(void)
 	Zf(prng_init)(&p, &sc);
 	for (u = 0; u < (sizeof KAT_RNG_1) / sizeof(KAT_RNG_1[0]); u ++) {
 		if (KAT_RNG_1[u] != prng_get_u64(&p)) {
-			fprintf(stderr, "ERR KAT_RNG_1(%zu)\n", u);
+			Ifx_Console_print("ERR KAT_RNG_1(%zu)\n", u);
 			exit(EXIT_FAILURE);
 		}
 	}
 	for (u = 0; u < (sizeof KAT_RNG_2) / sizeof(KAT_RNG_2[0]); u ++) {
 		if (KAT_RNG_2[u] != prng_get_u8(&p)) {
-			fprintf(stderr, "ERR KAT_RNG_2(%zu)\n", u);
+			Ifx_Console_print("ERR KAT_RNG_2(%zu)\n", u);
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	printf("done.\n");
-	fflush(stdout);
+	Ifx_Console_print("done.\n");
+	
 }
 
 static void
@@ -2624,8 +2624,8 @@ test_FP_block(void)
 	unsigned char tmp[16], tmp2[16];
 	size_t u;
 
-	printf("Test floating-point (block): ");
-	fflush(stdout);
+	Ifx_Console_print("Test floating-point (block): ");
+	
 
 	inner_shake256_init(&sc);
 
@@ -2663,11 +2663,11 @@ test_FP_block(void)
 				testfp_hash_d(&sc, fpr_add(a, b));
 			}
 		}
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
-	printf(" ");
-	fflush(stdout);
+	Ifx_Console_print(" ");
+	
 
 	inner_shake256_init(&rng);
 	inner_shake256_inject(&rng, (const uint8_t *)"fpemu", 5);
@@ -2736,8 +2736,8 @@ test_FP_block(void)
 		testfp_hash_d(&sc, fpr_sqrt(a));
 
 		if ((ctr & 0x3FF) == 0) {
-			printf(".");
-			fflush(stdout);
+			Ifx_Console_print(".");
+			
 		}
 	}
 
@@ -2747,19 +2747,19 @@ test_FP_block(void)
 
 	inner_shake256_flip(&sc);
 	inner_shake256_extract(&sc, tmp, sizeof tmp);
-	printf(" ");
+	Ifx_Console_print(" ");
 	for (u = 0; u < sizeof tmp; u ++) {
-		printf("%02x", tmp[u]);
+		Ifx_Console_print("%02x", tmp[u]);
 	}
 	hextobin(tmp2, sizeof tmp2, "77cea0ea343b8c1c578af7c9fa3267b6");
 	if (memcmp(tmp, tmp2, sizeof tmp) != 0) {
-		fprintf(stderr, "Wrong hash"
+		Ifx_Console_print("Wrong hash"
 			" (expected: 77cea0ea343b8c1c578af7c9fa3267b6)\n");
 		exit(EXIT_FAILURE);
 	}
 
-	printf(" done.\n");
-	fflush(stdout);
+	Ifx_Console_print(" done.\n");
+	
 }
 
 #if 0
@@ -2804,10 +2804,10 @@ check_fpeq(const char *name, fpr a, double ax)
 
 	au = double_to_u64(ax);
 	if (a != au) {
-		fprintf(stderr, "ERR (%s):\n", name);
-		fprintf(stderr, "  %20llu   %.20f\n",
+		Ifx_Console_print("ERR (%s):\n", name);
+		Ifx_Console_print("  %20llu   %.20f\n",
 			(unsigned long long)a, u64_to_double(a));
-		fprintf(stderr, "  %20llu   %.20f\n",
+		Ifx_Console_print("  %20llu   %.20f\n",
 			(unsigned long long)au, ax);
 		exit(EXIT_FAILURE);
 	}
@@ -2820,12 +2820,12 @@ check_fpeq1(const char *name, fpr a, fpr c, double cx)
 
 	cu = double_to_u64(cx);
 	if (c != cu) {
-		fprintf(stderr, "ERR (%s):\n", name);
-		fprintf(stderr, "  a =  %20llu   %.20f\n",
+		Ifx_Console_print("ERR (%s):\n", name);
+		Ifx_Console_print("  a =  %20llu   %.20f\n",
 			(unsigned long long)a, u64_to_double(a));
-		fprintf(stderr, "  c =  %20llu   %.20f\n",
+		Ifx_Console_print("  c =  %20llu   %.20f\n",
 			(unsigned long long)c, u64_to_double(c));
-		fprintf(stderr, "  x =  %20llu   %.20f\n",
+		Ifx_Console_print("  x =  %20llu   %.20f\n",
 			(unsigned long long)cu, cx);
 		exit(EXIT_FAILURE);
 	}
@@ -2838,14 +2838,14 @@ check_fpeq2(const char *name, fpr a, fpr b, fpr c, double cx)
 
 	cu = double_to_u64(cx);
 	if (c != cu) {
-		fprintf(stderr, "ERR (%s):\n", name);
-		fprintf(stderr, "  a =  %20llu   %.20f\n",
+		Ifx_Console_print("ERR (%s):\n", name);
+		Ifx_Console_print("  a =  %20llu   %.20f\n",
 			(unsigned long long)a, u64_to_double(a));
-		fprintf(stderr, "  b =  %20llu   %.20f\n",
+		Ifx_Console_print("  b =  %20llu   %.20f\n",
 			(unsigned long long)b, u64_to_double(b));
-		fprintf(stderr, "  c =  %20llu   %.20f\n",
+		Ifx_Console_print("  c =  %20llu   %.20f\n",
 			(unsigned long long)c, u64_to_double(c));
-		fprintf(stderr, "  x =  %20llu   %.20f\n",
+		Ifx_Console_print("  x =  %20llu   %.20f\n",
 			(unsigned long long)cu, cx);
 		exit(EXIT_FAILURE);
 	}
@@ -2860,8 +2860,8 @@ test_FP_detailed(void)
 	int e;
 	fpr nzero;
 
-	printf("Test floating-point (detailed): ");
-	fflush(stdout);
+	Ifx_Console_print("Test floating-point (detailed): ");
+	
 
 	check_fpeq("fpr_of(0)", fpr_of(0), 0.0);
 	check_fpeq1("fpr_neg(0)", fpr_zero, fpr_neg(fpr_zero), -0.0);
@@ -2905,11 +2905,11 @@ test_FP_detailed(void)
 					a, b, fpr_add(a, b), ax - bx);
 			}
 		}
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
-	printf(" ");
-	fflush(stdout);
+	Ifx_Console_print(" ");
+	
 
 	inner_shake256_init(&rng);
 	inner_shake256_inject(&rng, (const uint8_t *)"fpemu", 5);
@@ -2937,7 +2937,7 @@ test_FP_detailed(void)
 		a = fpr_scaled(j, -8);
 		ax = ldexp((double)j, -8);
 		if (fpr_rint(a) != llrint(ax)) {
-			fprintf(stderr,
+			Ifx_Console_print(
 				"ERR (fpr_rint): %.7f -> %lld / %lld\n",
 				ax,
 				(long long)fpr_rint(a), (long long)llrint(ax));
@@ -2946,7 +2946,7 @@ test_FP_detailed(void)
 		a = fpr_scaled(j, -52);
 		ax = ldexp((double)j, -52);
 		if (fpr_trunc(a) != (long)ax) {
-			fprintf(stderr,
+			Ifx_Console_print(
 				"ERR (fpr_trunc): %.7f -> %ld / %ld\n",
 				ax,
 				(long)fpr_trunc(a), (long)ax);
@@ -2964,13 +2964,13 @@ test_FP_detailed(void)
 		}
 
 		if (fpr_lt(a, b) != (ax < bx)) {
-			fprintf(stderr,
+			Ifx_Console_print(
 				"ERR (fpr_lt): %.7f / %.7f\n",
 				u64_to_double(ax), u64_to_double(bx));
 			exit(EXIT_FAILURE);
 		}
 		if (fpr_lt(a, a) != 0) {
-			fprintf(stderr,
+			Ifx_Console_print(
 				"ERR (fpr_lt): %.7f / (self)\n",
 				u64_to_double(ax));
 			exit(EXIT_FAILURE);
@@ -3013,13 +3013,13 @@ test_FP_detailed(void)
 		check_fpeq1("fpr_sqrt", a, fpr_sqrt(a), sqrt(fabs(ax)));
 
 		if ((ctr & 0x3FF) == 0) {
-			printf(".");
-			fflush(stdout);
+			Ifx_Console_print(".");
+			
 		}
 	}
 
-	printf(" done.\n");
-	fflush(stdout);
+	Ifx_Console_print(" done.\n");
+	
 }
 
 #endif
@@ -3052,12 +3052,12 @@ test_poly_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 	uint8_t xb;
 	size_t n;
 
-	printf("[%u]", logn);
-	fflush(stdout);
+	Ifx_Console_print("[%u]", logn);
+	
 
 	n = (size_t)1 << logn;
 	if (tlen < 5 * n * sizeof(fpr)) {
-		fprintf(stderr, "Insufficient buffer size\n");
+		Ifx_Console_print("Insufficient buffer size\n");
 		exit(EXIT_FAILURE);
 	}
 	inner_shake256_init(&rng);
@@ -3084,7 +3084,7 @@ test_poly_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 		Zf(iFFT)(g, logn);
 		for (u = 0; u < n; u ++) {
 			if (fpr_rint(f[u]) != fpr_rint(g[u])) {
-				fprintf(stderr, "FFT/iFFT error\n");
+				Ifx_Console_print("FFT/iFFT error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -3115,7 +3115,7 @@ test_poly_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 		Zf(iFFT)(f, logn);
 		for (u = 0; u < n; u ++) {
 			if (fpr_rint(f[u]) != fpr_rint(h[u])) {
-				fprintf(stderr, "FFT mul error\n");
+				Ifx_Console_print("FFT mul error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -3133,7 +3133,7 @@ test_poly_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 			if (fpr_rint(g0[u]) != fpr_rint(h[(u << 1) + 0])
 				|| fpr_rint(g1[u]) != fpr_rint(h[(u << 1) + 1]))
 			{
-				fprintf(stderr, "split error\n");
+				Ifx_Console_print("split error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -3142,14 +3142,14 @@ test_poly_inner(unsigned logn, uint8_t *tmp, size_t tlen)
 		Zf(iFFT)(g, logn);
 		for (u = 0; u < n; u ++) {
 			if (fpr_rint(g[u]) != fpr_rint(h[u])) {
-				fprintf(stderr, "split/merge error\n");
+				Ifx_Console_print("split/merge error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
 
 		if (((ctr + 1) & 0xFF) == 0) {
-			printf(".");
-			fflush(stdout);
+			Ifx_Console_print(".");
+			
 		}
 	}
 }
@@ -3161,16 +3161,16 @@ test_poly(void)
 	uint8_t *tmp;
 	size_t tlen;
 
-	printf("Test polynomials: ");
-	fflush(stdout);
+	Ifx_Console_print("Test polynomials: ");
+	
 	tlen = 40960;
 	tmp = xmalloc(tlen);
 	for (logn = 1; logn <= 10; logn ++) {
 		test_poly_inner(logn, tmp, tlen);
 	}
 	xfree(tmp);
-	printf(" done.\n");
-	fflush(stdout);
+	Ifx_Console_print(" done.\n");
+	
 }
 
 typedef struct {
@@ -3288,13 +3288,13 @@ check_gaussian0_sampler(const u72 *x, int r)
 	if (z != r) {
 		size_t u;
 
-		fprintf(stderr,
+		Ifx_Console_print(
 			"wrong half-Gaussian output %d (exp: %d), val = 0x",
 			z, r);
 		for (u = sizeof x->v; u > 0; u --) {
-			fprintf(stderr, "%02X", x->v[u - 1]);
+			Ifx_Console_print("%02X", x->v[u - 1]);
 		}
-		fprintf(stderr, "\n");
+		Ifx_Console_print("\n");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -3305,8 +3305,8 @@ test_gaussian0_sampler(void)
 	u72 t, s;
 	int i;
 
-	printf("Test half-Gaussian sampler: ");
-	fflush(stdout);
+	Ifx_Console_print("Test half-Gaussian sampler: ");
+	
 
 	/*
 	 * gaussian0_sampler() reads a 72-bit value from the PRNG,
@@ -3329,8 +3329,8 @@ test_gaussian0_sampler(void)
 		u72_add(&t, &s);
 		check_gaussian0_sampler(&t, i);
 
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
 
 	/*
@@ -3339,12 +3339,12 @@ test_gaussian0_sampler(void)
 	 * yield a carry.
 	 */
 	if (u72_add_small(&t, 1) != 1) {
-		fprintf(stderr, "wrong distribution sum\n");
+		Ifx_Console_print("wrong distribution sum\n");
 		exit(EXIT_FAILURE);
 	}
 
-	printf(" done.\n");
-	fflush(stdout);
+	Ifx_Console_print(" done.\n");
+	
 }
 
 static fpr
@@ -3492,7 +3492,7 @@ test_sampler_rand(sampler_context *sc, fpr mu, fpr isigma)
 		z = Zf(sampler)(sc, mu, isigma);
 		z -= c;
 		if (z < -MAX_DEV || z > +MAX_DEV) {
-			fprintf(stderr, "out-of-range sampled value: %d\n", z);
+			Ifx_Console_print("out-of-range sampled value: %d\n", z);
 			exit(EXIT_FAILURE);
 		}
 		zz[z + MAX_DEV] ++;
@@ -3579,16 +3579,16 @@ test_sampler_rand(sampler_context *sc, fpr mu, fpr isigma)
 	df = zmax - zmin;
 	if (df == 13) {
 		if (!fpr_lt(chi, chi_dt_13)) {
-			fprintf(stderr, "chi-square test fail\n");
+			Ifx_Console_print("chi-square test fail\n");
 			exit(EXIT_FAILURE);
 		}
 	} else if (df == 14) {
 		if (!fpr_lt(chi, chi_dt_14)) {
-			fprintf(stderr, "chi-square test fail\n");
+			Ifx_Console_print("chi-square test fail\n");
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		fprintf(stderr, "unexpected number of classes: %d\n",
+		Ifx_Console_print("unexpected number of classes: %d\n",
 			zmax - zmin + 1);
 		exit(EXIT_FAILURE);
 	}
@@ -3605,8 +3605,8 @@ test_sampler(void)
 	fpr isigma, mu, muinc;
 	int i;
 
-	printf("Test sampler: ");
-	fflush(stdout);
+	Ifx_Console_print("Test sampler: ");
+	
 
 	inner_shake256_init(&rng);
 	inner_shake256_inject(&rng, (const void *)"test sampler", 12);
@@ -3621,12 +3621,12 @@ test_sampler(void)
 		test_sampler_rand(&sc, mu, isigma);
 		mu = fpr_add(mu, muinc);
 
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
 
-	printf(" done.\n");
-	fflush(stdout);
+	Ifx_Console_print(" done.\n");
+	
 }
 
 static void
@@ -3656,7 +3656,7 @@ test_sign_self(const int8_t *f, const int8_t *g,
 	memcpy(h, h_src, n * sizeof *h);
 	Zf(to_ntt_monty)(h, logn);
 
-	/* sprintf(buf, "sign %u", logn); */
+	/* Ifx_Console_print(buf, "sign %u", logn); */
 	memcpy(buf, "sign 0", 7);
 	buf[5] = '0' + logn;
 
@@ -3678,19 +3678,19 @@ test_sign_self(const int8_t *f, const int8_t *g,
 		Zf(hash_to_point_ct)(&sc2, hm2, logn, tt);
 		for (u = 0; u < n; u ++) {
 			if (hm2[u] != hm[u]) {
-				fprintf(stderr, "hash_to_point() mismatch\n");
+				Ifx_Console_print("hash_to_point() mismatch\n");
 				exit(EXIT_FAILURE);
 			}
 		}
 		Zf(sign_dyn)(sig, &rng, f, g, F, G, hm, logn, tt);
 		if (!Zf(verify_raw)(hm, sig, h, logn, tt)) {
-			fprintf(stderr, "self signature (dyn) not verified\n");
+			Ifx_Console_print("self signature (dyn) not verified\n");
 			exit(EXIT_FAILURE);
 		}
 
 		if (i % 10 == 0) {
-			printf(".");
-			fflush(stdout);
+			Ifx_Console_print(".");
+			
 		}
 	}
 
@@ -3711,18 +3711,18 @@ test_sign_self(const int8_t *f, const int8_t *g,
 		Zf(sign_tree)(sig, &rng, expanded_key, hm, logn, tt);
 
 		if (!Zf(verify_raw)(hm, sig, h, logn, tt)) {
-			fprintf(stderr, "self signature (dyn) not verified\n");
+			Ifx_Console_print("self signature (dyn) not verified\n");
 			exit(EXIT_FAILURE);
 		}
 
 		if (i % 10 == 0) {
-			printf(".");
-			fflush(stdout);
+			Ifx_Console_print(".");
+			
 		}
 	}
 
-	printf(" ");
-	fflush(stdout);
+	Ifx_Console_print(" ");
+	
 }
 
 static void
@@ -3731,8 +3731,8 @@ test_sign(void)
 	uint8_t *tmp;
 	size_t tlen;
 
-	printf("Test sign: ");
-	fflush(stdout);
+	Ifx_Console_print("Test sign: ");
+	
 
 	tlen = 178176;
 	tmp = xmalloc(tlen);
@@ -3746,8 +3746,8 @@ test_sign(void)
 
 	xfree(tmp);
 
-	printf("done.\n");
-	fflush(stdout);
+	Ifx_Console_print("done.\n");
+	
 }
 
 static void
@@ -3762,10 +3762,10 @@ test_keygen_inner(unsigned logn, uint8_t *tmp)
 	inner_shake256_context rng;
 	char buf[20];
 
-	printf("[%u]", logn);
-	fflush(stdout);
+	Ifx_Console_print("[%u]", logn);
+	
 
-	/* sprintf(buf, "keygen %u", logn); */
+	/* Ifx_Console_print(buf, "keygen %u", logn); */
 	memcpy(buf, "keygen 0", 9);
 	buf[7] = '0' + logn;
 
@@ -3804,18 +3804,18 @@ test_keygen_inner(unsigned logn, uint8_t *tmp)
 		} while (!Zf(is_invertible)(sig, logn, tt));
 		Zf(to_ntt_monty)(h, logn);
 		if (!Zf(verify_raw)(hm, sig, h, logn, tt)) {
-			fprintf(stderr, "self signature not verified\n");
+			Ifx_Console_print("self signature not verified\n");
 			exit(EXIT_FAILURE);
 		}
 		if (!Zf(verify_recover)(h2, hm, s1, sig, logn, tt)) {
-			fprintf(stderr, "self signature recovery failed\n");
+			Ifx_Console_print("self signature recovery failed\n");
 			exit(EXIT_FAILURE);
 		}
 		Zf(to_ntt_monty)(h2, logn);
 		check_eq(h, h2, n * sizeof *h, "recovered public key");
 
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
 }
 
@@ -3826,16 +3826,16 @@ test_keygen(void)
 	size_t tlen;
 	unsigned logn;
 
-	printf("Test keygen: ");
-	fflush(stdout);
+	Ifx_Console_print("Test keygen: ");
+	
 	tlen = 90112;
 	tmp = xmalloc(tlen);
 	for (logn = 1; logn <= 10; logn ++) {
 		test_keygen_inner(logn, tmp);
 	}
 	xfree(tmp);
-	printf("done.\n");
-	fflush(stdout);
+	Ifx_Console_print("done.\n");
+	
 }
 
 static void
@@ -3848,8 +3848,8 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 	uint8_t *tmpkg, *tmpmp, *tmpsd, *tmpst, *tmpvv, *tmpek;
 	size_t tmpkg_len, tmpmp_len, tmpsd_len, tmpst_len, tmpvv_len, tmpek_len;
 
-	printf("[%u]", logn);
-	fflush(stdout);
+	Ifx_Console_print("[%u]", logn);
+	
 
 	pubkey_len = FALCON_PUBKEY_SIZE(logn);
 	privkey_len = FALCON_PRIVKEY_SIZE(logn);
@@ -3888,21 +3888,21 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 		r = falcon_keygen_make(rng, logn, privkey, privkey_len,
 			pubkey, pubkey_len, tmpkg, tmpkg_len);
 		if (r != 0) {
-			fprintf(stderr, "keygen failed: %d\n", r);
+			Ifx_Console_print("keygen failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		memset(pubkey2, 0xFF, pubkey_len);
 		r = falcon_make_public(pubkey2, pubkey_len,
 			privkey, privkey_len, tmpmp, tmpmp_len);
 		if (r != 0) {
-			fprintf(stderr, "makepub failed: %d\n", r);
+			Ifx_Console_print("makepub failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		check_eq(pubkey, pubkey2, pubkey_len, "pub / repub");
 
 		r = falcon_get_logn(pubkey, pubkey_len);
 		if (r != (int)logn) {
-			fprintf(stderr, "get_logn failed: %d\n", r);
+			Ifx_Console_print("get_logn failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 
@@ -3912,13 +3912,13 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 			privkey, privkey_len,
 			"data1", 5, tmpsd, tmpsd_len);
 		if (r != 0) {
-			fprintf(stderr, "sign_dyn failed: %d\n", r);
+			Ifx_Console_print("sign_dyn failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		r = falcon_verify(sig, sig_len, FALCON_SIG_COMPRESSED,
 			pubkey, pubkey_len, "data1", 5, tmpvv, tmpvv_len);
 		if (r != 0) {
-			fprintf(stderr, "verify failed: %d\n", r);
+			Ifx_Console_print("verify failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		if (logn >= 5) {
@@ -3933,7 +3933,7 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 				pubkey, pubkey_len, "data2", 5,
 				tmpvv, tmpvv_len);
 			if (r != FALCON_ERR_BADSIG) {
-				fprintf(stderr, "wrong verify err: %d\n", r);
+				Ifx_Console_print("wrong verify err: %d\n", r);
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -3944,18 +3944,18 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 			privkey, privkey_len,
 			"data1", 5, tmpsd, tmpsd_len);
 		if (r != 0) {
-			fprintf(stderr, "sign_dyn(padded) failed: %d\n", r);
+			Ifx_Console_print("sign_dyn(padded) failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		if (sigpad_len != FALCON_SIG_PADDED_SIZE(logn)) {
-			fprintf(stderr, "sign_dyn(padded): wrong length %lu\n",
+			Ifx_Console_print("sign_dyn(padded): wrong length %lu\n",
 				(unsigned long)sigpad_len);
 			exit(EXIT_FAILURE);
 		}
 		r = falcon_verify(sigpad, sigpad_len, FALCON_SIG_PADDED,
 			pubkey, pubkey_len, "data1", 5, tmpvv, tmpvv_len);
 		if (r != 0) {
-			fprintf(stderr, "verify(padded) failed: %d\n", r);
+			Ifx_Console_print("verify(padded) failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		if (logn >= 5) {
@@ -3963,7 +3963,7 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 				pubkey, pubkey_len, "data2", 5,
 				tmpvv, tmpvv_len);
 			if (r != FALCON_ERR_BADSIG) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"wrong verify(padded) err: %d\n", r);
 				exit(EXIT_FAILURE);
 			}
@@ -3975,18 +3975,18 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 			privkey, privkey_len,
 			"data1", 5, tmpsd, tmpsd_len);
 		if (r != 0) {
-			fprintf(stderr, "sign_dyn(ct) failed: %d\n", r);
+			Ifx_Console_print("sign_dyn(ct) failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		if (sigct_len != FALCON_SIG_CT_SIZE(logn)) {
-			fprintf(stderr, "sign_dyn(ct): wrong length %lu\n",
+			Ifx_Console_print("sign_dyn(ct): wrong length %lu\n",
 				(unsigned long)sigct_len);
 			exit(EXIT_FAILURE);
 		}
 		r = falcon_verify(sigct, sigct_len, FALCON_SIG_CT,
 			pubkey, pubkey_len, "data1", 5, tmpvv, tmpvv_len);
 		if (r != 0) {
-			fprintf(stderr, "verify(ct) failed: %d\n", r);
+			Ifx_Console_print("verify(ct) failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		if (logn >= 5) {
@@ -3994,7 +3994,7 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 				pubkey, pubkey_len, "data2", 5,
 				tmpvv, tmpvv_len);
 			if (r != FALCON_ERR_BADSIG) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"wrong verify(ct) err: %d\n", r);
 				exit(EXIT_FAILURE);
 			}
@@ -4003,7 +4003,7 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 		r = falcon_expand_privkey(expkey, expkey_len,
 			privkey, privkey_len, tmpek, tmpek_len);
 		if (r != 0) {
-			fprintf(stderr, "expand_privkey failed: %d\n", r);
+			Ifx_Console_print("expand_privkey failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 
@@ -4013,13 +4013,13 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 			expkey,
 			"data1", 5, tmpst, tmpst_len);
 		if (r != 0) {
-			fprintf(stderr, "sign_tree failed: %d\n", r);
+			Ifx_Console_print("sign_tree failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		r = falcon_verify(sig, sig_len, FALCON_SIG_COMPRESSED,
 			pubkey, pubkey_len, "data1", 5, tmpvv, tmpvv_len);
 		if (r != 0) {
-			fprintf(stderr, "verify2 failed: %d\n", r);
+			Ifx_Console_print("verify2 failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		if (logn >= 5) {
@@ -4027,7 +4027,7 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 				pubkey, pubkey_len, "data2", 5,
 				tmpvv, tmpvv_len);
 			if (r != FALCON_ERR_BADSIG) {
-				fprintf(stderr, "wrong verify2 err: %d\n", r);
+				Ifx_Console_print("wrong verify2 err: %d\n", r);
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -4039,13 +4039,13 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 			expkey,
 			"data1", 5, tmpst, tmpst_len);
 		if (r != 0) {
-			fprintf(stderr, "sign_tree(padded) failed: %d\n", r);
+			Ifx_Console_print("sign_tree(padded) failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		r = falcon_verify(sigpad, sigpad_len, FALCON_SIG_PADDED,
 			pubkey, pubkey_len, "data1", 5, tmpvv, tmpvv_len);
 		if (r != 0) {
-			fprintf(stderr, "verify2(padded) failed: %d\n", r);
+			Ifx_Console_print("verify2(padded) failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		if (logn >= 5) {
@@ -4053,7 +4053,7 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 				pubkey, pubkey_len, "data2", 5,
 				tmpvv, tmpvv_len);
 			if (r != FALCON_ERR_BADSIG) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"wrong verify2(padded) err: %d\n", r);
 				exit(EXIT_FAILURE);
 			}
@@ -4065,13 +4065,13 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 			expkey,
 			"data1", 5, tmpst, tmpst_len);
 		if (r != 0) {
-			fprintf(stderr, "sign_tree(ct) failed: %d\n", r);
+			Ifx_Console_print("sign_tree(ct) failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		r = falcon_verify(sigct, sigct_len, FALCON_SIG_CT,
 			pubkey, pubkey_len, "data1", 5, tmpvv, tmpvv_len);
 		if (r != 0) {
-			fprintf(stderr, "verify2(ct) failed: %d\n", r);
+			Ifx_Console_print("verify2(ct) failed: %d\n", r);
 			exit(EXIT_FAILURE);
 		}
 		if (logn >= 5) {
@@ -4079,14 +4079,14 @@ test_external_API_inner(unsigned logn, shake256_context *rng)
 				pubkey, pubkey_len, "data2", 5,
 				tmpvv, tmpvv_len);
 			if (r != FALCON_ERR_BADSIG) {
-				fprintf(stderr,
+				Ifx_Console_print(
 					"wrong verify2(ct) err: %d\n", r);
 				exit(EXIT_FAILURE);
 			}
 		}
 
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
 
 	xfree(pubkey);
@@ -4110,16 +4110,16 @@ test_external_API(void)
 	unsigned logn;
 	shake256_context rng;
 
-	printf("Test external API: ");
-	fflush(stdout);
+	Ifx_Console_print("Test external API: ");
+	
 
 	shake256_init_prng_from_seed(&rng, "external", 8);
 	for (logn = 1; logn <= 10; logn ++) {
 		test_external_API_inner(logn, &rng);
 	}
 
-	printf("done.\n");
-	fflush(stdout);
+	Ifx_Console_print("done.\n");
+	
 }
 
 #if DO_NIST_TESTS
@@ -4657,8 +4657,8 @@ test_nist_KAT(unsigned logn, const char *srefhash)
 	sha1_context hhc;
 
 	n = (size_t)1 << logn;
-	printf("Test NIST KAT (%zu): ", n);
-	fflush(stdout);
+	Ifx_Console_print("Test NIST KAT (%zu): ", n);
+	
 
 	hextobin(hhref, sizeof hhref, srefhash);
 	sha1_init(&hhc);
@@ -4734,26 +4734,26 @@ test_nist_KAT(unsigned logn, const char *srefhash)
 		v = Zf(trim_i8_encode)(sk + u, sk_len - u,
 			f, logn, Zf(max_fg_bits)[logn]);
 		if (v == 0) {
-			fprintf(stderr, "ERR encoding sk(f)\n");
+			Ifx_Console_print("ERR encoding sk(f)\n");
 			exit(EXIT_FAILURE);
 		}
 		u += v;
 		v = Zf(trim_i8_encode)(sk + u, sk_len - u,
 			g, logn, Zf(max_fg_bits)[logn]);
 		if (v == 0) {
-			fprintf(stderr, "ERR encoding sk(g)\n");
+			Ifx_Console_print("ERR encoding sk(g)\n");
 			exit(EXIT_FAILURE);
 		}
 		u += v;
 		v = Zf(trim_i8_encode)(sk + u, sk_len - u,
 			F, logn, Zf(max_FG_bits)[logn]);
 		if (v == 0) {
-			fprintf(stderr, "ERR encoding sk(F)\n");
+			Ifx_Console_print("ERR encoding sk(F)\n");
 			exit(EXIT_FAILURE);
 		}
 		u += v;
 		if (u != sk_len) {
-			fprintf(stderr, "wrong private key length: %zu\n", u);
+			Ifx_Console_print("wrong private key length: %zu\n", u);
 			exit(EXIT_FAILURE);
 		}
 
@@ -4764,7 +4764,7 @@ test_nist_KAT(unsigned logn, const char *srefhash)
 		v = Zf(modq_encode)(pk + 1, pk_len - 1, h, logn);
 		u = 1 + v;
 		if (u != pk_len) {
-			fprintf(stderr, "wrong public key length: %zu\n", u);
+			Ifx_Console_print("wrong public key length: %zu\n", u);
 			exit(EXIT_FAILURE);
 		}
 
@@ -4801,7 +4801,7 @@ test_nist_KAT(unsigned logn, const char *srefhash)
 		 */
 		Zf(to_ntt_monty)(h, logn);
 		if (!Zf(verify_raw)(hm, sig, h, logn, tmp)) {
-			fprintf(stderr, "Invalid signature\n");
+			Ifx_Console_print("Invalid signature\n");
 			exit(EXIT_FAILURE);
 		}
 
@@ -4813,7 +4813,7 @@ test_nist_KAT(unsigned logn, const char *srefhash)
 		sm[42 + mlen] = 0x20 + logn;
 		u = Zf(comp_encode)(sm + 43 + mlen, over_len - 43, sig, logn);
 		if (u == 0) {
-			fprintf(stderr, "Could not encode signature\n");
+			Ifx_Console_print("Could not encode signature\n");
 			exit(EXIT_FAILURE);
 		}
 		u ++;
@@ -4837,8 +4837,8 @@ test_nist_KAT(unsigned logn, const char *srefhash)
 		sha1_print_line_with_hex(&hhc, "sm = ", sm, smlen);
 		sha1_print_line(&hhc, "");
 
-		printf(".");
-		fflush(stdout);
+		Ifx_Console_print(".");
+		
 	}
 
 	xfree(msg);
@@ -4850,22 +4850,22 @@ test_nist_KAT(unsigned logn, const char *srefhash)
 	xfree(esk);
 
 	sha1_out(&hhc, hhv);
-	printf(" ");
+	Ifx_Console_print(" ");
 	for (i = 0; i < 20; i ++) {
-		printf("%02x", hhv[i]);
+		Ifx_Console_print("%02x", hhv[i]);
 	}
 	check_eq(hhv, hhref, 20, "NIST KAT (SHA-1 hash)");
-	printf(" done.\n");
-	fflush(stdout);
+	Ifx_Console_print(" done.\n");
+	
 
 #else
 	size_t n;
 
 	(void)srefhash;
 	n = (size_t)1 << logn;
-	printf("Test NIST KAT (%zu): skipped because of incompatible build"
+	Ifx_Console_print("Test NIST KAT (%zu): skipped because of incompatible build"
 		" options\n", n);
-	fflush(stdout);
+	
 #endif
 }
 
@@ -4887,8 +4887,8 @@ test_speed_falcon(unsigned logn, uint8_t *tmp)
 	unsigned long num;
 
 	n = (size_t)1 << logn;
-	printf(" %4zu    ", n);
-	fflush(stdout);
+	Ifx_Console_print(" %4zu    ", n);
+	
 
 	if (!Zf(get_seed)(seed, sizeof seed)) {
 		memset(seed, 0, sizeof seed);
@@ -4923,8 +4923,8 @@ test_speed_falcon(unsigned logn, uint8_t *tmp)
 		end = clock();
 		d = (double)(end - begin) / (double)CLOCKS_PER_SEC;
 		if (d >= 2.0) {
-			printf(" %7.2f     ", d * 1000.0 / (double)num);
-			fflush(stdout);
+			Ifx_Console_print(" %7.2f     ", d * 1000.0 / (double)num);
+			
 			break;
 		}
 		num <<= 1;
@@ -4952,8 +4952,8 @@ test_speed_falcon(unsigned logn, uint8_t *tmp)
 		end = clock();
 		d = (double)(end - begin) / (double)CLOCKS_PER_SEC;
 		if (d >= 2.0) {
-			printf(" %8.2f     ", (double)num / d);
-			fflush(stdout);
+			Ifx_Console_print(" %8.2f     ", (double)num / d);
+			
 			break;
 		}
 		num <<= 1;
@@ -4985,8 +4985,8 @@ test_speed_falcon(unsigned logn, uint8_t *tmp)
 		end = clock();
 		d = (double)(end - begin) / (double)CLOCKS_PER_SEC;
 		if (d >= 2.0) {
-			printf(" %8.2f     ", (double)num / d);
-			fflush(stdout);
+			Ifx_Console_print(" %8.2f     ", (double)num / d);
+			
 			break;
 		}
 		num <<= 1;
@@ -5007,8 +5007,8 @@ test_speed_falcon(unsigned logn, uint8_t *tmp)
 		end = clock();
 		d = (double)(end - begin) / (double)CLOCKS_PER_SEC;
 		if (d >= 2.0) {
-			printf("%9.2f\n", (double)num / d);
-			fflush(stdout);
+			Ifx_Console_print("%9.2f\n", (double)num / d);
+			
 			break;
 		}
 		num <<= 1;
@@ -5023,8 +5023,8 @@ test_speed(void)
 
 	tlen = 182272;
 	tmp = xmalloc(tlen);
-	printf("degree   keygen(ms)   sign/s(dyn)   sign/s(tree)   vrfy/s\n");
-	fflush(stdout);
+	Ifx_Console_print("degree   keygen(ms)   sign/s(dyn)   sign/s(tree)   vrfy/s\n");
+	
 	test_speed_falcon(8, tmp);
 	test_speed_falcon(9, tmp);
 	test_speed_falcon(10, tmp);
