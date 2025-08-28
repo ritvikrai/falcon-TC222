@@ -55,6 +55,9 @@
  * @author   Thomas Pornin <thomas.pornin@nccgroup.com>
  */
 
+/******************************************************************************/
+/*----------------------------------Includes----------------------------------*/
+/******************************************************************************/
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -64,8 +67,15 @@
 #include "Ifx_Types.h"
 #include "IfxCpu.h"
 #include "IfxScuWdt.h"
-#include "Ifx_Console.h"
+//#include "Ifx_Console.h"
+#include "Cpu0_Main.h"
+#include "AsclinShellInterface.h"
+#include "SysSe/Bsp/Bsp.h"
 
+/******************************************************************************/
+/*------------------------------Global variables------------------------------*/
+/******************************************************************************/
+App_Cpu0 g_AppCpu0; /**< \brief CPU 0 global data */
 IfxCpu_syncEvent g_cpuSyncEvent = 0;
 
 /*
@@ -5036,6 +5046,7 @@ test_speed(void)
 
 int core0_main(void)
 {
+	/* Enable the global interrupts of this CPU */
     IfxCpu_enableInterrupts();
     
     /* !!WATCHDOG0 AND SAFETY WATCHDOG ARE DISABLED HERE!!
@@ -5047,6 +5058,20 @@ int core0_main(void)
     /* Wait for CPU sync event */
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
+
+	/* Initialise the application state */
+    g_AppCpu0.info.pllFreq = IfxScuCcu_getPllFrequency();
+    g_AppCpu0.info.cpuFreq = IfxScuCcu_getCpuFrequency(IfxCpu_getCoreIndex());
+    g_AppCpu0.info.sysFreq = IfxScuCcu_getSpbFrequency();
+    g_AppCpu0.info.stmFreq = IfxStm_getFrequency(&MODULE_STM0);
+
+	/* Shell init */
+    AsclinShellInterface_init();
+    Ifx_Console_print("\nPLL Frequency = %f",g_AppCpu0.info.pllFreq);
+    Ifx_Console_print("\nCPU Frequency = %f",g_AppCpu0.info.cpuFreq);
+    Ifx_Console_print("\nSystem (SPB) Frequency = %f",g_AppCpu0.info.sysFreq);
+    Ifx_Console_print("\nSTM Frequency = %f\n",g_AppCpu0.info.stmFreq);
+
     
 	unsigned old;
 
